@@ -1,6 +1,13 @@
+use std::sync;
+
+use discord_rich_presence::{
+    activity::{self, Assets},
+    DiscordIpc, DiscordIpcClient,
+};
+use serde::Deserialize;
 use tauri::{async_runtime::Mutex, State};
 
-use crate::store::Settings;
+use crate::{constants, store::Settings};
 
 #[tauri::command]
 pub fn fullscreen(window: tauri::Window) {
@@ -31,4 +38,29 @@ pub async fn gamewindow(
         }
     }
     Ok(())
+}
+
+#[derive(Default, Deserialize)]
+pub struct DiscordActivity {
+    pub title: String,
+    pub description: String,
+}
+
+#[tauri::command]
+pub fn discordactivity(activity: DiscordActivity, state: State<'_, sync::Mutex<DiscordIpcClient>>) {
+    if let Ok(mut client) = state.lock() {
+        client
+            .set_activity(
+                activity::Activity::new()
+                    .details(&activity.title)
+                    .state(&activity.description)
+                    .assets(
+                        Assets::new()
+                            .large_text("Aiming.Pro")
+                            .large_image(constants::DISCORD_BIGPICID)
+                            .small_text("Aiming.Pro"),
+                    ),
+            )
+            .ok();
+    }
 }

@@ -3,13 +3,23 @@ use tauri::{CustomMenuItem, Menu, MenuItem, Submenu};
 use crate::store::Settings;
 
 pub fn create_menu(settings: Settings) -> Menu {
-    let mut vsync = CustomMenuItem::new("disable-vsync".to_string(), "V-Sync");
+    let mut auto_fullscreen = CustomMenuItem::new(
+        "fullscreen-on-game-start".to_string(),
+        "Auto Fullscreen In-Game",
+    );
+    if settings.fullscreen_on_game_start {
+        auto_fullscreen = auto_fullscreen.selected();
+    }
+
+    let mut vsync = CustomMenuItem::new("disable-vsync".to_string(), "V-Sync (Requires restart)");
     if settings.vsync {
         vsync = vsync.selected();
     }
 
-    let mut unlimited_fps =
-        CustomMenuItem::new("disable-fps-limit".to_string(), "Unlimited Framerate");
+    let mut unlimited_fps = CustomMenuItem::new(
+        "disable-fps-limit".to_string(),
+        "Unlimited Framerate (Requires restart)",
+    );
     if settings.unlimited_fps {
         unlimited_fps = unlimited_fps.selected();
     }
@@ -41,6 +51,7 @@ pub fn create_menu(settings: Settings) -> Menu {
                     .disabled(),
                 )
                 .add_native_item(MenuItem::Separator)
+                .add_item(auto_fullscreen)
                 .add_item(vsync)
                 .add_item(unlimited_fps)
                 .add_native_item(MenuItem::Separator)

@@ -1,6 +1,8 @@
 use std::{iter::once, os::windows::prelude::OsStrExt};
 use tauri::window::PlatformWebview;
 
+use crate::constants;
+
 pub fn set_user_agent(webview: PlatformWebview) {
     #[cfg(windows)]
     use webview2_com::take_pwstr;
@@ -22,7 +24,7 @@ pub fn set_user_agent(webview: PlatformWebview) {
 
         settings.UserAgent(&mut pwstr).unwrap();
         let mut user_agent = take_pwstr(pwstr);
-        user_agent.push_str(" aiming-pro-client");
+        user_agent.push_str(constants::USER_AGENT_SUFFIX);
 
         settings
             .SetUserAgent(PCWSTR::from_raw(encode_wide(user_agent).as_ptr()))

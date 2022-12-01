@@ -21,6 +21,7 @@ dependencies = [
 name = "aiming-pro-tauri"
 version = "0.0.0"
 dependencies = [
+ "discord-rich-presence",
  "serde",
  "serde_json",
  "tauri",
@@ -531,6 +532,18 @@ dependencies = [
  "libc",
  "redox_users",
  "winapi",
+]
+
+[[package]]
+name = "discord-rich-presence"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "47fc4beffb85ee1461588499073a4d9c20dcc7728c4b13d6b282ab6c508947e5"
+dependencies = [
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "uuid 0.8.2",
 ]
 
 [[package]]
@@ -3046,6 +3059,9 @@ name = "uuid"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bc5cf98d8186244414c848017f0e2676b3fcb46807f6668a97dfe67359a3c4b7"
+dependencies = [
+ "getrandom 0.2.8",
+]
 
 [[package]]
 name = "uuid"
