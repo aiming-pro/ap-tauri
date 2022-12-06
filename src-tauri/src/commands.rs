@@ -7,7 +7,7 @@ use discord_rich_presence::{
 use serde::Deserialize;
 use tauri::{async_runtime::Mutex, State};
 
-use crate::{constants, store::Settings};
+use crate::{constants, store::Settings, AppState};
 
 #[tauri::command]
 pub fn fullscreen(window: tauri::Window) {
@@ -22,6 +22,17 @@ pub fn fullscreen(window: tauri::Window) {
             window.menu_handle().hide().ok();
         }
     }
+}
+
+#[tauri::command]
+pub fn ready(window: tauri::Window, state: State<'_, sync::Mutex<AppState>>) {
+    println!("Ready was printed");
+    let mut value = state.lock().unwrap();
+    if let Some(protocol) = &value.queued_action {
+        protocol.activate(&window);
+    }
+    value.ready = true;
+    value.queued_action = None;
 }
 
 #[tauri::command]

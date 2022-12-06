@@ -9,89 +9,48 @@ use discord_rich_presence::{DiscordIpc, DiscordIpcClient};
 use store::Settings;
 
 use tauri::{async_runtime::Mutex, Manager};
+
+use crate::protocol::ProtocolType;
 // use tauri_runtime_wry::wry::application::{event_loop::EventLoop, window::Fullscreen};
 
 mod commands;
 mod constants;
 mod menu;
+mod protocol;
 mod store;
 mod webview;
 
-const INIT_SCRIPT: &str = r#"
-window.addEventListener('keydown', e => {
-    if(e.code === 'F11') {
-        window.__TAURI__?.invoke('fullscreen');
-    }
-});
+const INIT_SCRIPT: &str = include_str!("js/script.js");
 
-const parsePageFromTitle = (title) =>
-    title.split('|')[0] !== "Aiming.Pro "
-        ? title.split('|')[0]
-        : 'General';
+pub struct AppState {
+    ready: bool,
+    queued_action: Option<ProtocolType>,
+}
 
-const gameActivity = (status) => {
-    const activity = {
-        title: status.gameName,
-        description: `Current HS: ${status.highScore.toString()}`
-    };
-
-    // Send the activity-update
-    window.__TAURI__?.invoke("discordactivity", { activity });
-};
-
-const browseActivity = () => {
-    // Default activity if window is closed
-    const activity = {
-        title: "Browsing",
-        description: parsePageFromTitle(document.title)
-    };
-    // Send the activity-update
-    window.__TAURI__?.invoke("discordactivity", { activity });
-};
-
-
-window.addEventListener(
-    "DOMContentLoaded",
-    () => {
-
-        // IF GAME PAGE
-        if (typeof (window).gameVue === "object") {
-            window.__TAURI__?.invoke("gamewindow", { open: true });
-        } else {
-            // let the controller know and update activity
-            browseActivity();
-            window.__TAURI__?.invoke("gamewindow", { open: false });
+impl Default for AppState {
+    fn default() -> Self {
+        Self {
+            ready: false,
+            queued_action: None,
         }
-
-        /* Wait for Game Events to send to the RPC */
-        window.addEventListener(
-            "game-status-update",
-            (e) => {
-                // Prepare the discord template
-                gameActivity(e.detail);
-            }
-        );
-
-        window.addEventListener("game-modal-closed", () => {
-            browseActivity();
-            window.__TAURI__?.invoke("gamewindow", { open: false });
-        });
-
-        // If a game has started
-        window.addEventListener("project-started", () => {
-            // We don't want to use the regular injection if it's a modal
-            if (typeof (window).gameVue !== "object"){
-                // Let the controller now that a game has been opened
-                window.__TAURI__?.invoke("gamewindow", { open: true });
-            }
-        });
-    },
-    false
-);
-
-"#;
+    }
+}
 
 fn main() {
+    tauri_plugin_deep_link::prepare("pro.aiming");
+
+    // See if args includes custom protocol
+    let mut protocol_action = None;
+    if let Some(request) = std::env::args().nth(1) {
+        match request.parse::<ProtocolType>() {
+            Ok(protocol) => {
+                protocol_action = Some(protocol);
+            }
+            Err(_) => {}
+        }
+    }
+
+    // Activate Discord Rich Presence
     let mut client = DiscordIpcClient::new(constants::DISCORD_CLIENTID).unwrap();
     // Silently fail any Discord IPC errors
     client.connect().ok();
@@ -99,12 +58,18 @@ fn main() {
     let app = tauri::Builder::default()
         .manage(Mutex::new(Settings::default()))
         .manage(sync::Mutex::new(client))
+        .manage(sync::Mutex::new(AppState {
+            queued_action: protocol_action,
+            ..Default::default()
+        }))
         .invoke_handler(tauri::generate_handler![
             commands::discordactivity,
             commands::gamewindow,
-            commands::fullscreen
+            commands::fullscreen,
+            commands::ready,
         ])
         .setup(|app| {
+            // Read settings
             let handle = app.handle();
             let task = tauri::async_runtime::spawn(async move {
                 let state = handle.state::<Mutex<Settings>>();
@@ -115,6 +80,27 @@ fn main() {
             });
             let settings = tauri::async_runtime::block_on(task).unwrap();
 
+            // Set custom protocol
+            let handle = app.handle();
+            tauri_plugin_deep_link::register(constants::PROTOCOL_PREFIX, move |request| {
+                match request.parse::<ProtocolType>() {
+                    Ok(protocol) => {
+                        let state = handle.state::<sync::Mutex<AppState>>();
+                        let mut value = state.lock().unwrap();
+                        if value.ready {
+                            handle.get_window("main").map(|window| {
+                                protocol.activate(&window);
+                            });
+                        } else {
+                            value.queued_action = Some(protocol);
+                        }
+                    }
+                    Err(_) => {}
+                }
+            })
+            .unwrap();
+
+            // Setup additional browser args
             let mut args = String::new();
             if !settings.vsync {
                 args.push_str(" --disable-gpu-vsync");
@@ -123,6 +109,7 @@ fn main() {
                 args.push_str(" --disable-frame-rate-limit");
             }
 
+            // Create window & webview
             let window = tauri::WindowBuilder::new(
                 app,
                 "main",
@@ -136,11 +123,12 @@ fn main() {
             .initialization_script(INIT_SCRIPT)
             .build()?;
 
+            // Set user agent
             window
                 .with_webview(|webview| {
                     webview::set_user_agent(webview);
                 })
-                .expect("Failed");
+                .expect("Failed to set user agent");
 
             // let focused = Arc::new(AtomicBool::new(false));
             // let focused_clone = focused.clone();
@@ -213,7 +201,7 @@ fn main() {
             _ => {}
         })
         .build(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .expect("Erro while running application");
 
     app.run(|app_handle, event| match event {
         tauri::RunEvent::ExitRequested { .. } => {
