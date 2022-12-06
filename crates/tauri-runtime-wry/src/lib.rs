@@ -62,7 +62,7 @@ use wry::{
   },
   http::{Request as WryRequest, Response as WryResponse},
   webview::{
-    FileDropEvent as WryFileDropEvent, WebContext, WebView, WebViewBuilder,
+    FileDropEvent as WryFileDropEvent, Url, WebContext, WebView, WebViewBuilder,
     WebViewBuilderExtWindows,
   },
 };
@@ -3012,6 +3012,20 @@ fn create_webview<T: UserEvent>(
     webview_builder = webview_builder.with_additionl_browser_args(format!(
       "{user_agent} --disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection"
     ));
+
+    // Open
+    webview_builder = webview_builder.with_navigation_handler(|url_str| {
+      if let Ok(url) = Url::parse(&url_str) {
+        if let Some(host) = url.host_str() {
+          if host.ends_with("aiming.pro") {
+            return true;
+          }
+        }
+
+        open::that(url_str).ok();
+      }
+      false
+    });
   }
   if let Some(handler) = ipc_handler {
     webview_builder = webview_builder.with_ipc_handler(create_ipc_handler(

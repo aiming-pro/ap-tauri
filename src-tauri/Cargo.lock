@@ -2777,6 +2777,7 @@ version = "0.12.1"
 dependencies = [
  "cocoa",
  "gtk",
+ "open",
  "percent-encoding",
  "rand 0.8.5",
  "raw-window-handle",
