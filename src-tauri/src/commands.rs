@@ -26,7 +26,6 @@ pub fn fullscreen(window: tauri::Window) {
 
 #[tauri::command]
 pub fn ready(window: tauri::Window, state: State<'_, sync::Mutex<AppState>>) {
-    println!("Ready was printed");
     let mut value = state.lock().unwrap();
     if let Some(protocol) = &value.queued_action {
         protocol.activate(&window);
