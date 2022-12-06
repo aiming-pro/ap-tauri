@@ -3,12 +3,17 @@
     windows_subsystem = "windows"
 )]
 
-use std::sync;
+use std::sync::{
+    self,
+    atomic::{AtomicBool, Ordering},
+    Arc,
+};
 
 use discord_rich_presence::{DiscordIpc, DiscordIpcClient};
 use store::Settings;
 
-use tauri::{async_runtime::Mutex, Manager};
+use tauri::GlobalShortcutManager;
+use tauri::{async_runtime::Mutex, Manager, WindowEvent};
 
 use crate::protocol::ProtocolType;
 // use tauri_runtime_wry::wry::application::{event_loop::EventLoop, window::Fullscreen};
@@ -130,31 +135,29 @@ fn main() {
                 })
                 .expect("Failed to set user agent");
 
-            // let focused = Arc::new(AtomicBool::new(false));
-            // let focused_clone = focused.clone();
+            let focused = Arc::new(AtomicBool::new(false));
+            let focused_clone = focused.clone();
 
-            // window.on_window_event(move |event| match event {
-            //     WindowEvent::Focused(value) => focused_clone.store(*value, Ordering::Relaxed),
-            //     _ => {}
-            // });
+            window.on_window_event(move |event| match event {
+                WindowEvent::Focused(value) => focused_clone.store(*value, Ordering::Relaxed),
+                _ => {}
+            });
 
-            // app.global_shortcut_manager()
-            //     .register("F11", move || {
-            //         if focused.load(Ordering::Relaxed) {
-            //             if let Ok(fullscreened) = window.is_fullscreen() {
-            //                 window
-            //                     .set_fullscreen(!fullscreened)
-            //                     .expect("Failed to fullscreen");
-
-            //                 if fullscreened {
-            //                     window.menu_handle().show().ok();
-            //                 } else {
-            //                     window.menu_handle().hide().ok();
-            //                 }
-            //             }
-            //         }
-            //     })
-            //     .expect("Could not setup shortcut");
+            app.global_shortcut_manager()
+                .register("F11", move || {
+                    if focused.load(Ordering::Relaxed) {
+                        if let Ok(fullscreened) = window.is_fullscreen() {
+                            if let Ok(_) = window.set_fullscreen(!fullscreened) {
+                                if fullscreened {
+                                    window.menu_handle().show().ok();
+                                } else {
+                                    window.menu_handle().hide().ok();
+                                }
+                            }
+                        }
+                    }
+                })
+                .expect("Failed to register shortcut");
 
             Ok(())
         })

@@ -1,9 +1,3 @@
-window.addEventListener('keydown', (e) => {
-  if (e.code === 'F11') {
-    window.__TAURI__?.invoke('fullscreen');
-  }
-});
-
 const parsePageFromTitle = (title) =>
   title.split('|')[0] !== 'Aiming.Pro ' ? title.split('|')[0] : 'General';
 
@@ -30,7 +24,7 @@ const browseActivity = () => {
 window.addEventListener(
   'DOMContentLoaded',
   () => {
-    window.__TAURI__.invoke('ready');
+    window.__TAURI__?.invoke('ready');
     // IF GAME PAGE
     if (typeof window.gameVue === 'object') {
       window.__TAURI__?.invoke('gamewindow', { open: true });
