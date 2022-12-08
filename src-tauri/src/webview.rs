@@ -37,23 +37,35 @@ fn encode_wide(string: impl AsRef<std::ffi::OsStr>) -> Vec<u16> {
 }
 
 pub fn disable_new_windows(webview: &PlatformWebview) {
-    #[cfg(windows)]
+    use webview2_com::take_pwstr;
     use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2NewWindowRequestedEventHandler;
     use webview2_com::NewWindowRequestedEventHandler;
+    use windows::core::PWSTR;
     use windows::Win32::System::WinRT::EventRegistrationToken;
+
+    let mut token = EventRegistrationToken::default();
+
+    let callback: ICoreWebView2NewWindowRequestedEventHandler =
+        NewWindowRequestedEventHandler::create(Box::new(move |_, args| {
+            if let Some(args) = args {
+                let mut pwstr = PWSTR::null();
+
+                unsafe {
+                    // Cancel open window event
+                    args.SetHandled(true)?;
+                    args.Uri(&mut pwstr)?;
+                }
+
+                let uri = take_pwstr(pwstr);
+
+                println!("{uri}");
+                open::that(uri).ok();
+            }
+            Ok(())
+        }));
 
     unsafe {
         let webview2 = webview.controller().CoreWebView2().unwrap();
-
-        let mut token = EventRegistrationToken::default();
-
-        let callback: ICoreWebView2NewWindowRequestedEventHandler =
-            NewWindowRequestedEventHandler::create(Box::new(move |_, args| {
-                if let Some(args) = args {
-                    args.SetHandled(true)?;
-                }
-                Ok(())
-            }));
 
         webview2
             .add_NewWindowRequested(&callback, &mut token)

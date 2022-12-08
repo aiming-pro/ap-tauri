@@ -56,3 +56,7 @@ window.addEventListener(
   },
   false
 );
+
+window.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+});
