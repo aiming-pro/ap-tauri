@@ -131,9 +131,12 @@ fn main() {
             // Set user agent
             window
                 .with_webview(|webview| {
-                    webview::set_user_agent(webview);
+                    webview::set_user_agent(&webview);
+                    webview::disable_new_windows(&webview);
                 })
                 .expect("Failed to set user agent");
+
+            // Fullscreen shortcut
 
             let focused = Arc::new(AtomicBool::new(false));
             let focused_clone = focused.clone();
@@ -173,6 +176,8 @@ fn main() {
                     value.vsync = !value.vsync;
                     item.set_selected(value.vsync).unwrap();
                     value.save(&handle).await.expect("Failed to save config");
+
+                    // handle.restart();
                 });
             }
             "disable-fps-limit" => {
@@ -186,6 +191,8 @@ fn main() {
                     value.unlimited_fps = !value.unlimited_fps;
                     item.set_selected(value.unlimited_fps).unwrap();
                     value.save(&handle).await.expect("Failed to save config");
+
+                    // handle.restart();
                 });
             }
             "fullscreen-on-game-start" => {
@@ -201,10 +208,33 @@ fn main() {
                     value.save(&handle).await.expect("Failed to save config");
                 });
             }
+            "fullscreen" => {
+                let window = event.window();
+                if let Ok(fullscreened) = window.is_fullscreen() {
+                    if let Ok(_) = window.set_fullscreen(!fullscreened) {
+                        if fullscreened {
+                            window.menu_handle().show().ok();
+                        } else {
+                            window.menu_handle().hide().ok();
+                        }
+                    }
+                }
+            }
+            "reload" => {
+                event.window().eval("window.location.reload()").ok();
+            }
+            "devtools" => {
+                let window = event.window();
+                if window.is_devtools_open() {
+                    event.window().close_devtools();
+                } else {
+                    event.window().open_devtools();
+                }
+            }
             _ => {}
         })
         .build(tauri::generate_context!())
-        .expect("Erro while running application");
+        .expect("Error while running application");
 
     app.run(|app_handle, event| match event {
         tauri::RunEvent::ExitRequested { .. } => {

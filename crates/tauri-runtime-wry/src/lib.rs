@@ -3017,7 +3017,7 @@ fn create_webview<T: UserEvent>(
     webview_builder = webview_builder.with_navigation_handler(|url_str| {
       if let Ok(url) = Url::parse(&url_str) {
         if let Some(host) = url.host_str() {
-          if host.ends_with("aiming.pro") {
+          if host.ends_with("aiming.pro") || host.ends_with("localhost") {
             return true;
           }
         }

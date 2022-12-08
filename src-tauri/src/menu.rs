@@ -28,9 +28,9 @@ pub fn create_menu(settings: Settings) -> Menu {
         .add_submenu(Submenu::new(
             "Edit",
             Menu::new()
-                .add_native_item(MenuItem::Undo)
-                .add_native_item(MenuItem::Redo)
-                .add_native_item(MenuItem::Separator)
+                // .add_native_item(MenuItem::Undo)
+                // .add_native_item(MenuItem::Redo)
+                // .add_native_item(MenuItem::Separator)
                 .add_native_item(MenuItem::Cut)
                 .add_native_item(MenuItem::Copy)
                 .add_native_item(MenuItem::Paste)
@@ -38,7 +38,15 @@ pub fn create_menu(settings: Settings) -> Menu {
         ))
         .add_submenu(Submenu::new(
             "View",
-            Menu::new().add_item(CustomMenuItem::new("reload".to_string(), "Reload")),
+            Menu::new()
+                .add_item(CustomMenuItem::new("reload".to_string(), "Reload").accelerator("Ctrl+R"))
+                .add_item(
+                    CustomMenuItem::new("fullscreen".to_string(), "Fullscreen").accelerator("F11"),
+                ),
+            // .add_item(CustomMenuItem::new(
+            //     "devtools".to_string(),
+            //     "Toggle dev-tools",
+            // )),
         ))
         .add_submenu(Submenu::new(
             "Game",

@@ -3,7 +3,7 @@ use tauri::window::PlatformWebview;
 
 use crate::constants;
 
-pub fn set_user_agent(webview: PlatformWebview) {
+pub fn set_user_agent(webview: &PlatformWebview) {
     #[cfg(windows)]
     use webview2_com::take_pwstr;
     use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2Settings2;
@@ -34,4 +34,29 @@ pub fn set_user_agent(webview: PlatformWebview) {
 
 fn encode_wide(string: impl AsRef<std::ffi::OsStr>) -> Vec<u16> {
     string.as_ref().encode_wide().chain(once(0)).collect()
+}
+
+pub fn disable_new_windows(webview: &PlatformWebview) {
+    #[cfg(windows)]
+    use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2NewWindowRequestedEventHandler;
+    use webview2_com::NewWindowRequestedEventHandler;
+    use windows::Win32::System::WinRT::EventRegistrationToken;
+
+    unsafe {
+        let webview2 = webview.controller().CoreWebView2().unwrap();
+
+        let mut token = EventRegistrationToken::default();
+
+        let callback: ICoreWebView2NewWindowRequestedEventHandler =
+            NewWindowRequestedEventHandler::create(Box::new(move |_, args| {
+                if let Some(args) = args {
+                    args.SetHandled(true)?;
+                }
+                Ok(())
+            }));
+
+        webview2
+            .add_NewWindowRequested(&callback, &mut token)
+            .unwrap();
+    }
 }

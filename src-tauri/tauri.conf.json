@@ -7,12 +7,14 @@
     "withGlobalTauri": true
   },
   "package": {
-    "productName": "Aiming.Pro",
-    "version": "0.0.0"
+    "productName": "aiming-pro-tauri",
+    "version": "0.0.1"
   },
   "tauri": {
     "allowlist": {
-      "all": true
+      "globalShortcut": {
+        "all": true
+      }
     },
     "bundle": {
       "active": true,
@@ -44,7 +46,11 @@
       "windows": {
         "certificateThumbprint": null,
         "digestAlgorithm": "sha256",
-        "timestampUrl": ""
+        "timestampUrl": "",
+        "wix": {
+          "dialogImagePath": "./icons/dialogImage.bmp",
+          "bannerPath": "./icons/banner.bmp"
+        }
       }
     },
     "security": {
