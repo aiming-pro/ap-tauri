@@ -124,7 +124,7 @@ fn main() {
             .maximized(true)
             // Modifications to tauri-runtime-wry make this an additional_browser_args function instead
             .user_agent(&args)
-            .menu(menu::create_menu(settings))
+            .menu(menu::create_menu(&settings))
             .initialization_script(INIT_SCRIPT)
             .build()?;
 

@@ -2,7 +2,7 @@ use tauri::{CustomMenuItem, Menu, MenuItem, Submenu};
 
 use crate::store::Settings;
 
-pub fn create_menu(settings: Settings) -> Menu {
+pub fn create_menu(settings: &Settings) -> Menu {
     let mut auto_fullscreen = CustomMenuItem::new(
         "fullscreen-on-game-start".to_string(),
         "Auto Fullscreen In-Game",

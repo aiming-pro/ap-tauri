@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -o-user-select: none;
+        user-select: none;
+      }
+      body {
+        position: fixed;
+        height: 100%;
+        width: 100%;
+
+        background-color: rgba(35, 35, 60, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        text-align: center;
+        font-family: Verdana, Geneva, Tahoma, sans-serif;
+        font-weight: bold;
+      }
+
+      #title {
+        color: white;
+      }
+      #loading-description {
+        padding-top: 25px;
+        color: #107fea;
+      }
+    </style>
+  </head>
+  <!-- This file is currently unused but keeping just incase-->
+  <body>
+    <!-- 
+      Add this to tauri.conf.json
+      // {
+      //   "height": 400,
+      //   "width": 500,
+      //   "decorations": false,
+      //   "center": true,
+      //   "resizable": false,
+      //   "url": "splashscreen.html",
+      //   "label": "splashscreen"
+      // } -->
+    <div>
+      <h2 id="title">AIMING.PRO</h2>
+      <img draggable="false" src="out.gif" width="200px" />
+      <h4 id="loading-description">Initializing...</h4>
+    </div>
+  </body>
+</html>
