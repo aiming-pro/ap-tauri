@@ -19,9 +19,9 @@ pub struct Settings {
 impl Default for Settings {
     fn default() -> Self {
         Settings {
-            unlimited_fps: true,
             fullscreen_on_game_start: true,
-            vsync: false,
+            unlimited_fps: false,
+            vsync: true,
         }
     }
 }

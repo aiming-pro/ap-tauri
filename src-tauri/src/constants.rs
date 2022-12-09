@@ -6,3 +6,4 @@ pub const DISCORD_BIGPICID: &str = "logo";
 
 pub const GAME_BASE_URL: &str = "https://aiming.pro/3dGame/index.html?id=";
 pub const PLAYLIST_BASE_URL: &str = "https://aiming.pro/#/training/playlists/play/";
+pub const LOGIN_URL: &str = "https://aiming.pro/login";

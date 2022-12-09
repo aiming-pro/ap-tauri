@@ -45,25 +45,27 @@ impl FromStr for ProtocolType {
     }
 }
 
+fn generate_redirect_script(base_url: &str, parameter: &str) -> String {
+    format!("const loggedIn = document.cookie.split('; ').some(c => c.startsWith('user_basic')); window.location.replace(loggedIn ? '{}{}' : '{}')", base_url, parameter, constants::LOGIN_URL)
+}
+
 impl ProtocolType {
     pub fn activate(&self, window: &Window) {
         window.set_focus().ok();
         match self.action {
             ProtocolAction::Game => {
                 window
-                    .eval(&format!(
-                        "window.location.replace('{}{}')",
+                    .eval(&generate_redirect_script(
                         constants::GAME_BASE_URL,
-                        self.parameter.to_string(),
+                        &self.parameter.to_string(),
                     ))
                     .ok();
             }
             ProtocolAction::Playlist => {
                 window
-                    .eval(&format!(
-                        "window.location.replace('{}{}')",
+                    .eval(&generate_redirect_script(
                         constants::PLAYLIST_BASE_URL,
-                        self.parameter.to_string()
+                        &self.parameter.to_string(),
                     ))
                     .ok();
             }
