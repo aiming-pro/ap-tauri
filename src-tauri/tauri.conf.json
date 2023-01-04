@@ -7,8 +7,8 @@
     "withGlobalTauri": true
   },
   "package": {
-    "productName": "aiming-pro-tauri",
-    "version": "0.0.1"
+    "productName": "Aiming Pro",
+    "version": "2.0.1"
   },
   "tauri": {
     "allowlist": {
@@ -32,6 +32,7 @@
         "icons/icon.ico"
       ],
       "identifier": "pro.aiming",
+      "publisher": "Insight Aiming Ltd.",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
@@ -49,7 +50,9 @@
         "timestampUrl": "",
         "wix": {
           "dialogImagePath": "./icons/dialogImage.bmp",
-          "bannerPath": "./icons/banner.bmp"
+          "bannerPath": "./icons/banner.bmp",
+          "template": "./wix/main.wxs",
+          "fragmentPaths": ["./wix/uninstall.wxs"]
         }
       }
     },

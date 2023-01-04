@@ -120,7 +120,7 @@ fn main() {
                 "main",
                 tauri::WindowUrl::External("https://aiming.pro".parse().unwrap()),
             )
-            .title("Aiming.Pro (Test App)")
+            .title("Aiming.Pro")
             .maximized(true)
             // Modifications to tauri-runtime-wry make this an additional_browser_args function instead
             .user_agent(&args)
