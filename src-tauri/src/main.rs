@@ -56,9 +56,13 @@ fn main() {
     }
 
     // Activate Discord Rich Presence
-    let mut client = DiscordIpcClient::new(constants::DISCORD_CLIENTID).unwrap();
-    // Silently fail any Discord IPC errors
-    client.connect().ok();
+    let mut client = DiscordIpcClient::new(constants::DISCORD_CLIENTID).ok();
+    client = client.and_then(|mut client| {
+        if let Err(_) = client.connect() {
+            return None;
+        }
+        Some(client)
+    });
 
     let app = tauri::Builder::default()
         .manage(Mutex::new(Settings::default()))

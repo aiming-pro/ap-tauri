@@ -57,20 +57,25 @@ pub struct DiscordActivity {
 }
 
 #[tauri::command]
-pub fn discordactivity(activity: DiscordActivity, state: State<'_, sync::Mutex<DiscordIpcClient>>) {
+pub fn discordactivity(
+    activity: DiscordActivity,
+    state: State<'_, sync::Mutex<Option<DiscordIpcClient>>>,
+) {
     if let Ok(mut client) = state.lock() {
-        client
-            .set_activity(
-                activity::Activity::new()
-                    .details(&activity.title)
-                    .state(&activity.description)
-                    .assets(
-                        Assets::new()
-                            .large_text("Aiming.Pro")
-                            .large_image(constants::DISCORD_BIGPICID)
-                            .small_text("Aiming.Pro"),
-                    ),
-            )
-            .ok();
+        if let Some(client) = &mut *client {
+            client
+                .set_activity(
+                    activity::Activity::new()
+                        .details(&activity.title)
+                        .state(&activity.description)
+                        .assets(
+                            Assets::new()
+                                .large_text("Aiming.Pro")
+                                .large_image(constants::DISCORD_BIGPICID)
+                                .small_text("Aiming.Pro"),
+                        ),
+                )
+                .ok();
+        }
     }
 }
