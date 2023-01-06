@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <Fragment>
-      <Property Id="WixQuietExecCmdLine" Value='"cmd.exe" /c IF EXIST "[INSTALLDIR]Uninstall Aiming Pro.exe" ( start /wait "" "[INSTALLDIR]Uninstall Aiming Pro.exe" /S "_?=[INSTALLDIR]" ) &amp;&amp; IF EXIST "[INSTALLDIR]Uninstall Aiming Pro.exe" ( start /wait "" del "[INSTALLDIR]Uninstall Aiming Pro.exe" )' />
-      <CustomAction Id="QtExecExample" BinaryKey="WixCA" DllEntry="WixQuietExec" Execute="immediate" Return="check" />
-      <InstallExecuteSequence>
-          <Custom Action="QtExecExample" After="InstallInitialize">
-              NOT(REMOVE)
-          </Custom>
-      </InstallExecuteSequence>
+    <CustomAction Id="UninstallElectron" Directory="INSTALLDIR" Return="ignore" ExeCommand='cmd.exe /c IF EXIST "Uninstall Aiming Pro.exe" ( start /wait "" "Uninstall Aiming Pro.exe" /S _?=[INSTALLDIR] )' />
+    <InstallExecuteSequence>
+        <Custom Action="UninstallElectron" After="InstallInitialize">
+            NOT(REMOVE)
+        </Custom>
+    </InstallExecuteSequence>
   </Fragment>
 </Wix>

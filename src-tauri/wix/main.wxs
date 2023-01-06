@@ -305,7 +305,7 @@
         </InstallExecuteSequence>
         {{/if}}
 
-        <CustomActionRef Id="QtExecExample" />
+        <CustomActionRef Id="UninstallElectron" />
 
         <SetProperty Id="ARPINSTALLLOCATION" Value="[INSTALLDIR]" After="CostFinalize"/>
     </Product>
