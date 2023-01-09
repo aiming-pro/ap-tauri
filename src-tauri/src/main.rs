@@ -107,7 +107,7 @@ fn main() {
                     Err(_) => {}
                 }
             })
-            .unwrap();
+            .ok();
 
             // Setup additional browser args
             let mut args = String::new();
@@ -132,26 +132,32 @@ fn main() {
             .initialization_script(INIT_SCRIPT)
             .build()?;
 
-            // Set user agent
+            // Set user agent and disable new window creation
             window
                 .with_webview(|webview| {
-                    webview::set_user_agent(&webview);
-                    webview::disable_new_windows(&webview);
+                    // Silently fails but should have no reason to
+                    webview::set_user_agent(&webview).ok();
+                    webview::disable_new_windows(&webview).ok();
                 })
                 .expect("Failed to set user agent");
 
             // Fullscreen shortcut
 
             let focused = Arc::new(AtomicBool::new(false));
-            let focused_clone = focused.clone();
 
-            window.on_window_event(move |event| match event {
-                WindowEvent::Focused(value) => focused_clone.store(*value, Ordering::Relaxed),
-                _ => {}
-            });
+            {
+                let focused = focused.clone();
+                window.on_window_event(move |event| match event {
+                    WindowEvent::Focused(value) => focused.store(*value, Ordering::Relaxed),
+                    _ => {}
+                });
+            }
 
-            app.global_shortcut_manager()
-                .register("F11", move || {
+            let mut gsm = app.global_shortcut_manager();
+            {
+                let focused = focused.clone();
+                let window = window.clone();
+                gsm.register("F11", move || {
                     if focused.load(Ordering::Relaxed) {
                         if let Ok(fullscreened) = window.is_fullscreen() {
                             if let Ok(_) = window.set_fullscreen(!fullscreened) {
@@ -165,6 +171,7 @@ fn main() {
                     }
                 })
                 .expect("Failed to register shortcut");
+            }
 
             Ok(())
         })
@@ -242,8 +249,13 @@ fn main() {
 
     app.run(|app_handle, event| match event {
         tauri::RunEvent::ExitRequested { .. } => {
-            if let Ok(mut client) = app_handle.state::<sync::Mutex<DiscordIpcClient>>().lock() {
-                client.close().ok();
+            if let Ok(mut client) = app_handle
+                .state::<sync::Mutex<Option<DiscordIpcClient>>>()
+                .lock()
+            {
+                if let Some(client) = &mut *client {
+                    client.close().ok();
+                }
             }
         }
         _ => {}

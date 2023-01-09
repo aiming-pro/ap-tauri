@@ -1,9 +1,9 @@
-use std::{iter::once, os::windows::prelude::OsStrExt};
+use std::{error::Error, iter::once, os::windows::prelude::OsStrExt};
 use tauri::window::PlatformWebview;
 
 use crate::constants;
 
-pub fn set_user_agent(webview: &PlatformWebview) {
+pub fn set_user_agent(webview: &PlatformWebview) -> Result<(), Box<dyn Error>> {
     #[cfg(windows)]
     use webview2_com::take_pwstr;
     use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2Settings2;
@@ -13,30 +13,24 @@ pub fn set_user_agent(webview: &PlatformWebview) {
 
     unsafe {
         let mut pwstr = PWSTR::null();
-        let settings: ICoreWebView2Settings2 = webview
-            .controller()
-            .CoreWebView2()
-            .unwrap()
-            .Settings()
-            .unwrap()
-            .cast()
-            .unwrap();
+        let settings: ICoreWebView2Settings2 =
+            webview.controller().CoreWebView2()?.Settings()?.cast()?;
 
-        settings.UserAgent(&mut pwstr).unwrap();
+        settings.UserAgent(&mut pwstr)?;
         let mut user_agent = take_pwstr(pwstr);
         user_agent.push_str(constants::USER_AGENT_SUFFIX);
 
-        settings
-            .SetUserAgent(PCWSTR::from_raw(encode_wide(user_agent).as_ptr()))
-            .unwrap();
+        settings.SetUserAgent(PCWSTR::from_raw(encode_wide(user_agent).as_ptr()))?;
     }
+
+    Ok(())
 }
 
 fn encode_wide(string: impl AsRef<std::ffi::OsStr>) -> Vec<u16> {
     string.as_ref().encode_wide().chain(once(0)).collect()
 }
 
-pub fn disable_new_windows(webview: &PlatformWebview) {
+pub fn disable_new_windows(webview: &PlatformWebview) -> Result<(), Box<dyn Error>> {
     use webview2_com::take_pwstr;
     use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2NewWindowRequestedEventHandler;
     use webview2_com::NewWindowRequestedEventHandler;
@@ -65,10 +59,10 @@ pub fn disable_new_windows(webview: &PlatformWebview) {
         }));
 
     unsafe {
-        let webview2 = webview.controller().CoreWebView2().unwrap();
+        let webview2 = webview.controller().CoreWebView2()?;
 
-        webview2
-            .add_NewWindowRequested(&callback, &mut token)
-            .unwrap();
+        webview2.add_NewWindowRequested(&callback, &mut token)?;
     }
+
+    Ok(())
 }

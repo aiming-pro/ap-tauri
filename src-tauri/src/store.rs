@@ -42,7 +42,7 @@ impl Settings {
         create_dir_all(store_path.parent().expect("Invalid store path")).await?;
 
         let mut f = File::create(&store_path).await?;
-        f.write_all(&serde_json::to_string(self).unwrap().as_bytes())
+        f.write_all(&serde_json::to_string(self)?.as_bytes())
             .await?;
 
         Ok(())
@@ -53,7 +53,7 @@ impl Settings {
 
         let bytes = read(&store_path).await?;
 
-        *self = serde_json::from_slice::<Settings>(&bytes).unwrap();
+        *self = serde_json::from_slice::<Settings>(&bytes)?;
 
         Ok(())
     }

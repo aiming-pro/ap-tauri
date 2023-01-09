@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "Aiming Pro",
-    "version": "2.0.1"
+    "version": "2.0.0"
   },
   "tauri": {
     "allowlist": {
@@ -52,7 +52,8 @@
           "dialogImagePath": "./icons/dialogImage.bmp",
           "bannerPath": "./icons/banner.bmp",
           "template": "./wix/main.wxs",
-          "fragmentPaths": ["./wix/uninstall.wxs"]
+          "fragmentPaths": ["./wix/uninstall.wxs"],
+          "componentRefs": ["OldUninstall"]
         }
       }
     },
@@ -60,7 +61,12 @@
       "csp": null
     },
     "updater": {
-      "active": false
+      "active": true,
+      "endpoints": [
+        "https://github.com/aiming-pro/ap-tauri/releases/latest/download/update.json"
+      ],
+      "dialog": true,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDZEREE3NzYxNUVDQUQxMzEKUldReDBjcGVZWGZhYlkvTW92dkRaVENYR0oxbThyQXpFNjFsWEVsZ2hJbHltRlJ4UnpEb1JaclIK"
     },
     "windows": []
   }
