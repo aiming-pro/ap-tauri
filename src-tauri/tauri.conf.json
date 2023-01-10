@@ -47,7 +47,7 @@
       "windows": {
         "certificateThumbprint": "90e9e488f768c6c0c4b86ba19a6326417ad07610",
         "digestAlgorithm": "sha256",
-        "timestampUrl": "http://timestamp.comodoca.com"
+        "timestampUrl": "http://timestamp.comodoca.com",
         "wix": {
           "dialogImagePath": "./icons/dialogImage.bmp",
           "bannerPath": "./icons/banner.bmp",
