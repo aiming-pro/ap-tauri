@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <Fragment>
-
-      <CustomAction Id="UninstallElectron" Directory="INSTALLDIR" Return="check" ExeCommand='powershell.exe -NoProfile -windowstyle hidden if (Test-Path \"Uninstall Aiming Pro.exe\" -PathType Leaf) [\{] Start-Process -wait \"Uninstall Aiming Pro.exe\" -ArgumentList \"/S _?=[INSTALLDIR] \" [\}]' />
+    <CustomAction Id="UninstallElectron" Directory="INSTALLDIR" Return="ignore" ExeCommand='powershell.exe -NoProfile -windowstyle hidden if (Test-Path \"Uninstall Aiming Pro.exe\" -PathType Leaf) [\{] Start-Process -wait \"Uninstall Aiming Pro.exe\" -ArgumentList \"/S _?=[INSTALLDIR] \" [\}]' />
 
     <InstallExecuteSequence>
         <Custom Action="UninstallElectron" After="InstallInitialize">
