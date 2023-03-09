@@ -126,6 +126,7 @@ fn main() {
             )
             .title("Aiming.Pro")
             .maximized(true)
+            .disable_file_drop_handler()
             // Modifications to tauri-runtime-wry make this an additional_browser_args function instead
             .user_agent(&args)
             .menu(menu::create_menu(&settings))
