@@ -2554,7 +2554,15 @@ fn handle_user_message<T: UserEvent>(
             WindowMessage::RequestUserAttention(request_type) => {
               window.request_user_attention(request_type.map(|r| r.0));
             }
-            WindowMessage::SetResizable(resizable) => window.set_resizable(resizable),
+            WindowMessage::SetResizable(resizable) => {
+              // Hacky override of resizable to instead set exclusive fullscreen
+              if resizable {
+                let mode = window.current_monitor().and_then(|m| m.video_modes().next());
+                if let Some(video_mode) = mode {
+                  window.set_fullscreen(Some(Fullscreen::Exclusive(video_mode)))
+                }
+              }
+            },
             WindowMessage::SetMaximizable(maximizable) => window.set_maximizable(maximizable),
             WindowMessage::SetMinimizable(minimizable) => window.set_minimizable(minimizable),
             WindowMessage::SetClosable(closable) => window.set_closable(closable),

@@ -24,7 +24,25 @@ pub fn create_menu(settings: &Settings) -> Menu {
         unlimited_fps = unlimited_fps.selected();
     }
 
+    let mut exclusive_fullscreen =
+        CustomMenuItem::new("exclusive-fullscreen".to_string(), "Exclusive Fullscreen");
+    if settings.exclusive_fullscreen {
+        exclusive_fullscreen = exclusive_fullscreen.selected();
+    }
+
     Menu::new()
+        .add_submenu(Submenu::new(
+            "App",
+            Menu::new()
+                .add_item(
+                    CustomMenuItem::new(
+                        "id".to_string(),
+                        concat!("App Version ", env!("CARGO_PKG_VERSION")),
+                    )
+                    .disabled(),
+                )
+                .add_native_item(MenuItem::Quit),
+        ))
         .add_submenu(Submenu::new(
             "Edit",
             Menu::new()
@@ -42,27 +60,18 @@ pub fn create_menu(settings: &Settings) -> Menu {
                 .add_item(CustomMenuItem::new("reload".to_string(), "Reload").accelerator("Ctrl+R"))
                 .add_item(
                     CustomMenuItem::new("fullscreen".to_string(), "Fullscreen").accelerator("F11"),
-                ),
-            // .add_item(CustomMenuItem::new(
-            //     "devtools".to_string(),
-            //     "Toggle dev-tools",
-            // )),
-        ))
-        .add_submenu(Submenu::new(
-            "Game",
-            Menu::new()
-                .add_item(
-                    CustomMenuItem::new(
-                        "id".to_string(),
-                        concat!("App Version ", env!("CARGO_PKG_VERSION")),
-                    )
-                    .disabled(),
                 )
                 .add_native_item(MenuItem::Separator)
-                .add_item(auto_fullscreen)
+                .add_item(auto_fullscreen), // .add_item(CustomMenuItem::new(
+                                            //     "devtools".to_string(),
+                                            //     "Toggle dev-tools",
+                                            // )),
+        ))
+        .add_submenu(Submenu::new(
+            "Performance",
+            Menu::new()
+                .add_item(exclusive_fullscreen)
                 .add_item(vsync)
-                .add_item(unlimited_fps)
-                .add_native_item(MenuItem::Separator)
-                .add_native_item(MenuItem::Quit),
+                .add_item(unlimited_fps),
         ))
 }

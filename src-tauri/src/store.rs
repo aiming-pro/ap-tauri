@@ -8,12 +8,14 @@ use tokio::{
 };
 
 #[derive(Serialize, Deserialize, Clone)]
+#[serde(default)]
 pub struct Settings {
     #[serde(rename = "unlimitedfps")]
     pub unlimited_fps: bool,
     #[serde(rename = "fullscreenOnGameStart")]
     pub fullscreen_on_game_start: bool,
     pub vsync: bool,
+    pub exclusive_fullscreen: bool,
 }
 
 impl Default for Settings {
@@ -22,6 +24,7 @@ impl Default for Settings {
             fullscreen_on_game_start: true,
             unlimited_fps: false,
             vsync: true,
+            exclusive_fullscreen: true,
         }
     }
 }

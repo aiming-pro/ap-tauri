@@ -9,18 +9,19 @@ use tauri::{async_runtime::Mutex, State};
 
 use crate::{constants, store::Settings, AppState};
 
-#[tauri::command]
-pub fn fullscreen(window: tauri::Window) {
-    if let Ok(fullscreened) = window.is_fullscreen() {
+pub fn fullscreen(window: &tauri::Window, value: bool, exclusive: bool) {
+    if value && exclusive {
         window
-            .set_fullscreen(!fullscreened)
-            .expect("Failed to fullscreen");
+            .set_resizable(value)
+            .expect("Failed to exclusive fullscreen");
+    } else {
+        window.set_fullscreen(value).expect("Failed to fullscreen");
+    }
 
-        if fullscreened {
-            window.menu_handle().show().ok();
-        } else {
-            window.menu_handle().hide().ok();
-        }
+    if value {
+        window.menu_handle().hide().ok();
+    } else {
+        window.menu_handle().show().ok();
     }
 }
 
@@ -40,10 +41,11 @@ pub async fn gamewindow(
     open: bool,
     state: State<'_, Mutex<Settings>>,
 ) -> Result<(), ()> {
-    if state.lock().await.fullscreen_on_game_start {
+    let settings = state.lock().await;
+    if settings.fullscreen_on_game_start {
         if let Ok(is_fullscreen) = window.is_fullscreen() {
             if (!is_fullscreen && open) || (is_fullscreen && !open) {
-                fullscreen(window);
+                fullscreen(&window, !is_fullscreen, settings.exclusive_fullscreen);
             }
         }
     }

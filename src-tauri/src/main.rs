@@ -62,7 +62,6 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             commands::discordactivity,
             commands::gamewindow,
-            commands::fullscreen,
             commands::ready,
         ])
         .setup(|app| {
@@ -156,15 +155,20 @@ fn main() {
                 let window = window.clone();
                 gsm.register("F11", move || {
                     if focused.load(Ordering::Relaxed) {
-                        if let Ok(fullscreened) = window.is_fullscreen() {
-                            if window.set_fullscreen(!fullscreened).is_ok() {
-                                if fullscreened {
-                                    window.menu_handle().show().ok();
-                                } else {
-                                    window.menu_handle().hide().ok();
-                                }
+                        let window = window.clone();
+                        tauri::async_runtime::spawn(async move {
+                            if let Ok(fullscreened) = window.is_fullscreen() {
+                                commands::fullscreen(
+                                    &window,
+                                    !fullscreened,
+                                    window
+                                        .state::<Mutex<Settings>>()
+                                        .lock()
+                                        .await
+                                        .exclusive_fullscreen,
+                                );
                             }
-                        }
+                        });
                     }
                 })
                 .expect("Failed to register shortcut");
@@ -203,6 +207,19 @@ fn main() {
                     // handle.restart();
                 });
             }
+            "exclusive-fullscreen" => {
+                tauri::async_runtime::spawn(async move {
+                    let window = event.window();
+                    let handle = window.app_handle();
+                    let state = window.state::<Mutex<Settings>>();
+                    let item = window.menu_handle().get_item(event.menu_item_id());
+
+                    let mut value = state.lock().await;
+                    value.exclusive_fullscreen = !value.exclusive_fullscreen;
+                    item.set_selected(value.exclusive_fullscreen).unwrap();
+                    value.save(&handle).await.expect("Failed to save config");
+                });
+            }
             "fullscreen-on-game-start" => {
                 tauri::async_runtime::spawn(async move {
                     let window = event.window();
@@ -217,16 +234,20 @@ fn main() {
                 });
             }
             "fullscreen" => {
-                let window = event.window();
-                if let Ok(fullscreened) = window.is_fullscreen() {
-                    if window.set_fullscreen(!fullscreened).is_ok() {
-                        if fullscreened {
-                            window.menu_handle().show().ok();
-                        } else {
-                            window.menu_handle().hide().ok();
-                        }
+                tauri::async_runtime::spawn(async move {
+                    let window = event.window();
+                    if let Ok(fullscreened) = window.is_fullscreen() {
+                        commands::fullscreen(
+                            window,
+                            !fullscreened,
+                            window
+                                .state::<Mutex<Settings>>()
+                                .lock()
+                                .await
+                                .exclusive_fullscreen,
+                        );
                     }
-                }
+                });
             }
             "reload" => {
                 event.window().eval("window.location.reload()").ok();
