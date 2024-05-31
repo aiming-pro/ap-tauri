@@ -14,6 +14,9 @@
     "allowlist": {
       "globalShortcut": {
         "all": true
+      },
+      "shell": {
+        "open": true
       }
     },
     "bundle": {

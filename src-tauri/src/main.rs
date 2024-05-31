@@ -16,7 +16,6 @@ use tauri::GlobalShortcutManager;
 use tauri::{async_runtime::Mutex, Manager, WindowEvent};
 
 use crate::protocol::ProtocolType;
-// use tauri_runtime_wry::wry::application::{event_loop::EventLoop, window::Fullscreen};
 
 mod commands;
 mod constants;
@@ -110,7 +109,8 @@ fn main() {
             .ok();
 
             // Setup additional browser args
-            let mut args = String::new();
+            let mut args =
+                String::from("--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection");
             if !settings.vsync {
                 args.push_str(" --disable-gpu-vsync");
             }
@@ -127,10 +127,19 @@ fn main() {
             .title("Aiming.Pro")
             .maximized(true)
             .disable_file_drop_handler()
-            // Modifications to tauri-runtime-wry make this an additional_browser_args function instead
-            .user_agent(&args)
+            .additional_browser_args(&args)
             .menu(menu::create_menu(&settings))
             .initialization_script(INIT_SCRIPT)
+            .on_navigation(|url| {
+                if let Some(host) = url.host_str() {
+                    if host.ends_with("aiming.pro") || host.ends_with("localhost") {
+                        return true;
+                    }
+                }
+
+                open::that(url.as_str()).ok();
+                false
+            })
             .build()?;
 
             // Set user agent and disable new window creation
@@ -140,7 +149,7 @@ fn main() {
                     webview::set_user_agent(&webview).ok();
                     webview::disable_new_windows(&webview).ok();
                 })
-                .expect("Failed to set user agent");
+                .expect("Failed to extend webview");
 
             // Fullscreen shortcut
 
