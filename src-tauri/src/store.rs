@@ -42,8 +42,7 @@ impl Settings {
         create_dir_all(store_path.parent().expect("Invalid store path")).await?;
 
         let mut f = File::create(&store_path).await?;
-        f.write_all(&serde_json::to_string(self)?.as_bytes())
-            .await?;
+        f.write_all(serde_json::to_string(self)?.as_bytes()).await?;
 
         Ok(())
     }

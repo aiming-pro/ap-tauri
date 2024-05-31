@@ -26,18 +26,10 @@ mod webview;
 
 const INIT_SCRIPT: &str = include_str!("js/script.js");
 
+#[derive(Default)]
 pub struct AppState {
     ready: bool,
     queued_action: Option<ProtocolType>,
-}
-
-impl Default for AppState {
-    fn default() -> Self {
-        Self {
-            ready: false,
-            queued_action: None,
-        }
-    }
 }
 
 fn main() {
@@ -46,18 +38,15 @@ fn main() {
     // See if args includes custom protocol
     let mut protocol_action = None;
     if let Some(request) = std::env::args().nth(1) {
-        match request.parse::<ProtocolType>() {
-            Ok(protocol) => {
-                protocol_action = Some(protocol);
-            }
-            Err(_) => {}
+        if let Ok(protocol) = request.parse::<ProtocolType>() {
+            protocol_action = Some(protocol);
         }
     }
 
     // Activate Discord Rich Presence
     let mut client = DiscordIpcClient::new(constants::DISCORD_CLIENTID).ok();
     client = client.and_then(|mut client| {
-        if let Err(_) = client.connect() {
+        if client.connect().is_err() {
             return None;
         }
         Some(client)
@@ -91,19 +80,16 @@ fn main() {
             // Set custom protocol
             let handle = app.handle();
             tauri_plugin_deep_link::register(constants::PROTOCOL_PREFIX, move |request| {
-                match request.parse::<ProtocolType>() {
-                    Ok(protocol) => {
-                        let state = handle.state::<sync::Mutex<AppState>>();
-                        let mut value = state.lock().unwrap();
-                        if value.ready {
-                            handle.get_window("main").map(|window| {
-                                protocol.activate(&window);
-                            });
-                        } else {
-                            value.queued_action = Some(protocol);
+                if let Ok(protocol) = request.parse::<ProtocolType>() {
+                    let state = handle.state::<sync::Mutex<AppState>>();
+                    let mut value = state.lock().unwrap();
+                    if value.ready {
+                        if let Some(window) = handle.get_window("main") {
+                            protocol.activate(&window);
                         }
+                    } else {
+                        value.queued_action = Some(protocol);
                     }
-                    Err(_) => {}
                 }
             })
             .ok();
@@ -157,9 +143,10 @@ fn main() {
 
             {
                 let focused = focused.clone();
-                window.on_window_event(move |event| match event {
-                    WindowEvent::Focused(value) => focused.store(*value, Ordering::Relaxed),
-                    _ => {}
+                window.on_window_event(move |event| {
+                    if let WindowEvent::Focused(value) = event {
+                        focused.store(*value, Ordering::Relaxed);
+                    }
                 });
             }
 
@@ -170,7 +157,7 @@ fn main() {
                 gsm.register("F11", move || {
                     if focused.load(Ordering::Relaxed) {
                         if let Ok(fullscreened) = window.is_fullscreen() {
-                            if let Ok(_) = window.set_fullscreen(!fullscreened) {
+                            if window.set_fullscreen(!fullscreened).is_ok() {
                                 if fullscreened {
                                     window.menu_handle().show().ok();
                                 } else {
@@ -232,7 +219,7 @@ fn main() {
             "fullscreen" => {
                 let window = event.window();
                 if let Ok(fullscreened) = window.is_fullscreen() {
-                    if let Ok(_) = window.set_fullscreen(!fullscreened) {
+                    if window.set_fullscreen(!fullscreened).is_ok() {
                         if fullscreened {
                             window.menu_handle().show().ok();
                         } else {
@@ -257,8 +244,8 @@ fn main() {
         .build(tauri::generate_context!())
         .expect("Error while running application");
 
-    app.run(|app_handle, event| match event {
-        tauri::RunEvent::ExitRequested { .. } => {
+    app.run(|app_handle, event| {
+        if let tauri::RunEvent::ExitRequested { .. } = event {
             if let Ok(mut client) = app_handle
                 .state::<sync::Mutex<Option<DiscordIpcClient>>>()
                 .lock()
@@ -268,6 +255,5 @@ fn main() {
                 }
             }
         }
-        _ => {}
     });
 }

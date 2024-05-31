@@ -32,14 +32,12 @@ impl FromStr for ProtocolType {
 
     fn from_str(input: &str) -> Result<ProtocolType, Self::Err> {
         let prefix = constants::PROTOCOL_PREFIX;
-        let path = input
-            .strip_prefix(&format!("{prefix}://"))
-            .map_or(Err(()), |x| Ok(x))?;
+        let path = input.strip_prefix(&format!("{prefix}://")).ok_or(())?;
 
-        let (action_str, parameter_str) = path.split_once("/").map_or(Err(()), |x| Ok(x))?;
+        let (action_str, parameter_str) = path.split_once('/').ok_or(())?;
 
-        let action: ProtocolAction = action_str.parse().map_or(Err(()), |x| Ok(x))?;
-        let parameter: i64 = parameter_str.parse().map_or(Err(()), |x| Ok(x))?;
+        let action: ProtocolAction = action_str.parse().map_or(Err(()), Ok)?;
+        let parameter: i64 = parameter_str.parse().map_or(Err(()), Ok)?;
 
         Ok(ProtocolType { action, parameter })
     }
