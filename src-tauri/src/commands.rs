@@ -9,14 +9,14 @@ use tauri::{async_runtime::Mutex, State};
 
 use crate::{constants, store::Settings, AppState};
 
-pub fn fullscreen(window: &tauri::Window, value: bool, exclusive: bool) {
-    if value && exclusive {
-        window
-            .set_resizable(value)
-            .expect("Failed to exclusive fullscreen");
-    } else {
-        window.set_fullscreen(value).expect("Failed to fullscreen");
-    }
+pub fn fullscreen(window: &tauri::Window, value: bool, _exclusive: bool) {
+    // if value && exclusive {
+    //     window
+    //         .set_resizable(value)
+    //         .expect("Failed to exclusive fullscreen");
+    // } else {
+    window.set_fullscreen(value).expect("Failed to fullscreen");
+    // }
 
     if value {
         window.menu_handle().hide().ok();

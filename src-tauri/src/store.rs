@@ -24,7 +24,7 @@ impl Default for Settings {
             fullscreen_on_game_start: true,
             unlimited_fps: false,
             vsync: true,
-            exclusive_fullscreen: true,
+            exclusive_fullscreen: false,
         }
     }
 }

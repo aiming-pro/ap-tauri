@@ -48,15 +48,17 @@
       "shortDescription": "",
       "targets": "all",
       "windows": {
-        "certificateThumbprint": "90e9e488f768c6c0c4b86ba19a6326417ad07610",
-        "digestAlgorithm": "sha256",
-        "timestampUrl": "http://timestamp.comodoca.com",
+        "signCommand": "trusted-signing-cli -e https://weu.codesigning.azure.net/ -a signing-2 -c InsightAimingCertificate %1",
         "wix": {
           "dialogImagePath": "./icons/dialogImage.bmp",
           "bannerPath": "./icons/banner.bmp",
           "template": "./wix/main.wxs",
-          "fragmentPaths": ["./wix/uninstall.wxs"],
-          "componentRefs": ["OldUninstall"]
+          "fragmentPaths": [
+            "./wix/uninstall.wxs"
+          ],
+          "componentRefs": [
+            "OldUninstall"
+          ]
         }
       }
     },

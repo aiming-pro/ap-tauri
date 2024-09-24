@@ -24,11 +24,11 @@ pub fn create_menu(settings: &Settings) -> Menu {
         unlimited_fps = unlimited_fps.selected();
     }
 
-    let mut exclusive_fullscreen =
-        CustomMenuItem::new("exclusive-fullscreen".to_string(), "Exclusive Fullscreen");
-    if settings.exclusive_fullscreen {
-        exclusive_fullscreen = exclusive_fullscreen.selected();
-    }
+    // let mut exclusive_fullscreen =
+    //     CustomMenuItem::new("exclusive-fullscreen".to_string(), "Exclusive Fullscreen");
+    // if settings.exclusive_fullscreen {
+    //     exclusive_fullscreen = exclusive_fullscreen.selected();
+    // }
 
     Menu::new()
         .add_submenu(Submenu::new(
@@ -70,7 +70,7 @@ pub fn create_menu(settings: &Settings) -> Menu {
         .add_submenu(Submenu::new(
             "Performance",
             Menu::new()
-                .add_item(exclusive_fullscreen)
+                // .add_item(exclusive_fullscreen)
                 .add_item(vsync)
                 .add_item(unlimited_fps),
         ))
